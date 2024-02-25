@@ -390,7 +390,6 @@ version = "0.1.0"
 dependencies = [
  "pixels",
  "winit",
- "winit_input_helper",
 ]
 
 [[package]]
@@ -789,6 +788,7 @@ dependencies = [
  "log",
  "ndk-sys",
  "num_enum",
+ "raw-window-handle 0.5.2",
  "raw-window-handle 0.6.0",
  "thiserror",
 ]
@@ -1594,16 +1594,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "web-time"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ee269d72cc29bf77a2c4bc689cc750fb39f5cbd493d2205bbb3f5c7779cf7b0"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "wgpu"
 version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1984,6 +1974,7 @@ dependencies = [
  "once_cell",
  "orbclient",
  "percent-encoding",
+ "raw-window-handle 0.5.2",
  "raw-window-handle 0.6.0",
  "redox_syscall 0.3.5",
  "rustix",
@@ -1998,21 +1989,11 @@ dependencies = [
  "wayland-protocols",
  "wayland-protocols-plasma",
  "web-sys",
- "web-time 0.2.4",
+ "web-time",
  "windows-sys 0.48.0",
  "x11-dl",
  "x11rb",
  "xkbcommon-dl",
-]
-
-[[package]]
-name = "winit_input_helper"
-version = "0.15.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec8c438d722f4ce69f261e0206072b51a8ac80af1ad6bf7e3dc5c25b5d8483a3"
-dependencies = [
- "web-time 1.0.0",
- "winit",
 ]
 
 [[package]]
