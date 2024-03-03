@@ -1,7 +1,14 @@
+extern crate nalgebra as na;
+
+use std::iter::zip;
+use ellipsoid_ray_casting::objects::{camera::Camera, ellipse::{Ellipse, HitRecord}};
+use na::Point3;
 use winit::{
     event::{Event, WindowEvent}, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder
 };
 use pixels::{Pixels, SurfaceTexture};
+
+
 
 
 fn main() {
@@ -29,8 +36,8 @@ fn main() {
                 event: WindowEvent::RedrawRequested,
                 ..
             } => {
-
-                fill_pixels(&mut pixels);
+                let win_size = window.inner_size();
+                fill_pixels(&mut pixels, win_size.width as usize, win_size.height as usize);
 
                 pixels.render().unwrap();
                 window.request_redraw();
@@ -48,11 +55,30 @@ fn main() {
 }
 
 
-fn fill_pixels(pixels: &mut Pixels) {
+fn fill_pixels(pixels: &mut Pixels, img_width: usize, img_height: usize) {
+
+    let ellipse = Ellipse::new(1.0, 2.0, 3.0, Point3::new(0.0_f32, 0.0, 20.0));
+    let camera = Camera::new(5.0, 5.0);
+
+    for (pixel, cam_point) in zip(pixels.frame_mut().chunks_exact_mut(4), camera.get_points_iterator(img_width, img_height)) {
+        match ellipse.hit(cam_point.x, cam_point.y) {
+            HitRecord::Hit { z } => {
+                pixel[0] = 00_u8;
+                pixel[1] = 00_u8;
+                pixel[2] = 00_u8;
+                pixel[3] = 00_u8;
+            }
+
+            HitRecord::Miss => {
+                pixel[0] = 255_u8;
+                pixel[1] = 255_u8;
+                pixel[2] = 255_u8;
+                pixel[3] = 255_u8;
+            }
+        }
+    }
+
     for pixel in pixels.frame_mut().chunks_exact_mut(4) {
-        pixel[0] = 0x5eu8;
-        pixel[1] = 0x48u8;
-        pixel[2] = 0xe8u8;
-        pixel[3] = 0xffu8;
+        
     }
 }
