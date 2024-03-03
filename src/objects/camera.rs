@@ -14,11 +14,11 @@ pub struct Camera {
 pub struct PointsIter {
     start_pos: Point3<f32>,
 
-    cur_x: usize,
-    cur_y: usize,
+    cur_x: u32,
+    cur_y: u32,
 
-    img_width: usize,
-    img_height: usize,
+    img_width: u32,
+    img_height: u32,
 
     delta_x: Vector3<f32>,
     delta_y: Vector3<f32>
@@ -38,14 +38,14 @@ impl Camera {
     }
 
 
-    pub fn get_points_iterator(&self, img_width: usize, img_height: usize) -> PointsIter {
+    pub fn get_points_iterator(&self, img_width: u32, img_height: u32) -> PointsIter {
         PointsIter::new(self, img_width, img_height)
     }
 }
 
 
 impl PointsIter {
-    fn new(camera: &Camera, img_width: usize, img_height: usize) -> PointsIter {
+    fn new(camera: &Camera, img_width: u32, img_height: u32) -> PointsIter {
         let delta_x = Vector3::x() * camera.viewport_width / (img_width ) as f32;
         let delta_y = -Vector3::y() * camera.viewport_height / (img_height ) as f32;
 
