@@ -1,9 +1,10 @@
 extern crate nalgebra as na;
 
-use na::{Point3, Vector3, point};
+use na::{Point3, Vector3, point, vector};
 
 
-const CAMERA_CENTER: Point3<f32> = point![0.0, 0.0, 0.0];
+pub const CAMERA_CENTER: Point3<f32> = point![0.0, 0.0, 0.0];
+
 
 pub struct Camera {
     viewport_width: f32,
