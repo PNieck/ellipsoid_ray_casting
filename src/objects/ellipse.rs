@@ -46,14 +46,16 @@ impl Ellipse {
     }
 
 
-    pub fn normal(&self, pos: Point3<f32>) -> Vector3<f32> {
-        let m = self.result_m;
-        
-        Vector3::new(
-            2.0*m[(0, 0)]*pos.x + (m[(1, 0)] + m[(0, 1)])*pos.y + (m[(2, 0)] + m[(0, 2)])*pos.z + m[(3, 0)] + m[(0, 3)],
-            2.0*m[(1, 1)]*pos.y + (m[(0, 1)] + m[(1, 0)])*pos.x + (m[(2, 1)] + m[(1, 2)])*pos.z + m[(3, 1)] + m[(1, 3)],
-            2.0*m[(2, 3)]*pos.z + (m[(0, 2)] + m[(2, 0)])*pos.x + (m[(1, 2)] + m[(2, 1)])*pos.y + m[(3, 2)] + m[(2, 3)]
-        ).normalize()
+    pub fn normal(&self, pos: &Point3<f32>) -> UnitVector3<f32> {
+        let m = &self.result_m;
+
+        UnitVector3::new_normalize(
+            Vector3::new(
+                2.0*m[(0, 0)]*pos.x + (m[(1, 0)] + m[(0, 1)])*pos.y + (m[(2, 0)] + m[(0, 2)])*pos.z + m[(3, 0)] + m[(0, 3)],
+                2.0*m[(1, 1)]*pos.y + (m[(0, 1)] + m[(1, 0)])*pos.x + (m[(2, 1)] + m[(1, 2)])*pos.z + m[(3, 1)] + m[(1, 3)],
+                2.0*m[(2, 2)]*pos.z + (m[(0, 2)] + m[(2, 0)])*pos.x + (m[(1, 2)] + m[(2, 1)])*pos.y + m[(3, 2)] + m[(2, 3)]
+            )
+        )
     }
 
 
