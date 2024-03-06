@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 
 use crate::math::quadratic_equation;
-use na::{Matrix4, Point3, Vector3, Vector4};
+use na::{Matrix4, Point3, Vector3, Vector4, UnitVector3};
 
 use super::Color;
 
@@ -21,9 +21,8 @@ pub enum HitRecord {
 }
 
 
-
 impl Ellipse {
-    pub fn new(a: f32, b: f32, c: f32, pos: Point3<f32>, col: Color) -> Ellipse {
+    pub fn new(a: f32, b: f32, c: f32, pos: &Point3<f32>, col: Color) -> Ellipse {
         let mut res = Ellipse {
             ellipse_m: Matrix4::from_diagonal(&Vector4::new(a, b, c, -1.0_f32)),
             model_m: Matrix4::new_translation(&pos.coords),
@@ -60,7 +59,7 @@ impl Ellipse {
 
 
     pub fn hit(&self, x: f32, y:f32) -> HitRecord {
-        let m = self.result_m;
+        let m = &self.result_m;
 
         let a: f32 = m[(2, 2)];
 
@@ -83,5 +82,41 @@ impl Ellipse {
 
             quadratic_equation::Solutions::None => HitRecord::Miss
         }
+    }
+
+    pub fn rotate(&mut self, axis: &UnitVector3<f32>, angle: f32) {
+        self.model_m *= Matrix4::from_axis_angle(axis, angle);
+
+        self.update_matrices();
+    }
+}
+
+
+#[cfg(test)]
+mod ellipsoid_tests {
+    use na::vector;
+
+    use super::*;
+
+
+    #[test]
+    fn normal_in_the_middle() {
+        let ellipoid = Ellipse::new(1.0, 2.0, 3.0,
+            &Point3::new(0.0, 0.0, 0.0),
+            Color::from_rgb(0, 0, 0)
+        );
+
+        let x = 0.0;
+        let y = 0.0;
+
+        let hit = ellipoid.hit(x, y);
+
+        match hit {
+            HitRecord::Hit { z } => {
+                let point = Point3::new(x, y, z);
+                assert_eq!(UnitVector3::new_normalize(vector![0.0, 0.0, -1.0]), ellipoid.normal(&point))
+            },
+            _ => panic!("Invalid value of enum")
+        };
     }
 }
