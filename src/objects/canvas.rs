@@ -60,8 +60,8 @@ impl Canvas {
         self.height = height;
     }
 
-    pub fn pixels(&mut self) -> PixelsIter {
-        PixelsIter::new(self)
+    pub fn pixels(&mut self) -> &Pixels {
+        &self.pixels
     }
 
     pub fn set_pixel(&mut self, color: Color, row: u32, column: u32) {

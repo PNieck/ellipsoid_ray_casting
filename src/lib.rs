@@ -18,7 +18,7 @@ mod objects;
 pub struct Scene {
     camera: Camera,
     ellipse: Ellipse,
-    canvas: Canvas,
+    pub canvas: Canvas,
     
     light_intensity: f32,
 }

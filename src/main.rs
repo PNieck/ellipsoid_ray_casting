@@ -1,80 +1,105 @@
 extern crate nalgebra as na;
 
 use ellipsoid_ray_casting::Scene;
-use na::{vector, Point2, UnitVector3, Vector2, Vector3};
+use na::{Point2, UnitVector3, Vector3};
 use winit::{
     event::{ElementState, Event, MouseButton, WindowEvent}, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder
 };
+use winit::dpi::LogicalSize;
+
+
+mod ui;
 
 
 fn main() {
-    let event_loop = EventLoop::new().unwrap();
-    let window = WindowBuilder::new().build(&event_loop).unwrap();
-
-    event_loop.set_control_flow(ControlFlow::Wait);
+    let event_loop = EventLoop::new();
+    let window = {
+        let size = LogicalSize::new(600 as f64, 600 as f64);
+        WindowBuilder::new()
+            .with_title("Hello Pixels + egui")
+            .with_inner_size(size)
+            .with_min_inner_size(size)
+            .build(&event_loop)
+            .unwrap()
+    };
 
     let mut scene = Scene::new(&window);
     scene.update();
+    
+    let window_size = window.inner_size();
+    let mut framework = ui::Framework::new(&event_loop, window_size.width, window_size.height, window.scale_factor() as f32, scene.canvas.pixels());
 
     let mut mouse_pressed = false;
-    //let mut prev_mouse_pos = Point2::origin();
     let mut cur_mouse_pos = Point2::origin();
-    //let mut mouse_move_vec = Vector2::zeros();
 
-    event_loop.run(move |event, elwt| {
+    event_loop.run(move |event, _, control_flow| {
+        control_flow.set_poll();
+
         match event {
-            Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
-                ..
-            } => {
-                println!("The close button was pressed; stopping");
-                elwt.exit();
-            },
-            Event::WindowEvent {
-                event: WindowEvent::RedrawRequested,
-                ..
-            } => {
-                scene.render();
-                window.request_redraw();
-            },
-            Event::WindowEvent { 
-                event: WindowEvent::Resized(new_size),
-                ..
-            } => {
-                scene.resize(new_size.width, new_size.height);
-                scene.update();
-            }
-            Event::WindowEvent {
-                event: WindowEvent::MouseInput { state: ElementState::Pressed, button: MouseButton::Left, ..},
-                ..
-            } => {
-                mouse_pressed = true;
-            }
-            Event::WindowEvent {
-                event: WindowEvent::MouseInput { state: ElementState::Released, button: MouseButton::Left, ..},
-                ..
-            } => {
-                mouse_pressed = false;
-            }
-            Event::WindowEvent {
-                event: WindowEvent::CursorMoved { position, .. },
-                ..
-            } => {
-                let prev_mouse_pos = cur_mouse_pos;
-                cur_mouse_pos.x = position.x;
-                cur_mouse_pos.y = -position.y;
+            Event::WindowEvent { event, .. } => {
+                match &event {
+                    WindowEvent::Resized(new_size) => {
+                        scene.resize(new_size.width, new_size.height);
+                        framework.resize(new_size.width, new_size.height);
+                        scene.update();
+                    }
 
-                let mouse_move_vec = cur_mouse_pos - prev_mouse_pos;
+                    WindowEvent::ScaleFactorChanged { scale_factor, new_inner_size } => {
+                        framework.scale_factor(*scale_factor);
+                        scene.resize(new_inner_size.width, new_inner_size.height);
+                        framework.resize(new_inner_size.width, new_inner_size.height);
+                    }
 
-                if mouse_pressed {
-                    let axis =  UnitVector3::new_normalize(Vector3::new(mouse_move_vec.y as f32, mouse_move_vec.x as f32, 0.0));
-                    scene.rotate_ellipse(&axis, mouse_move_vec.norm() as f32 * 0.04);
+                    WindowEvent::CloseRequested => {
+                        *control_flow = ControlFlow::Exit;
+                        return;
+                    }
 
-                    scene.update();
-                    scene.render();
+                    WindowEvent::MouseInput { state: ElementState::Pressed, button: MouseButton::Left, .. } => {
+                        mouse_pressed = true;
+                    }
+
+                    WindowEvent::MouseInput { state: ElementState::Released, button: MouseButton::Left, .. } => {
+                        mouse_pressed = false;
+                    }
+
+                    WindowEvent::CursorMoved { position, .. } => {
+                        let prev_mouse_pos = cur_mouse_pos;
+                        cur_mouse_pos.x = position.x;
+                        cur_mouse_pos.y = -position.y;
+        
+                        let mouse_move_vec = cur_mouse_pos - prev_mouse_pos;
+        
+                        if mouse_pressed {
+                            let axis =  UnitVector3::new_normalize(Vector3::new(mouse_move_vec.y as f32, mouse_move_vec.x as f32, 0.0));
+                            scene.rotate_ellipse(&axis, mouse_move_vec.norm() as f32 * 0.04);
+                        }
+                    }
+
+                    _ => ()
                 }
+
+                framework.handle_event(&event);
+
+                window.request_redraw();
+            }
+            Event::MainEventsCleared => {
+                window.request_redraw();
+            }
+            Event::RedrawRequested(_) => {
+                scene.update();
+                framework.prepare(&window);
+
+                scene.canvas.pixels().render_with(|encoder, render_target, context| {
+                    context.scaling_renderer.render(encoder, render_target);
+
+                    // Render egui
+                    framework.render(encoder, render_target, context);
+
+                    Ok(())
+                }).expect("Error while buffer rendering");
             }
             _ => ()
         }
-    }).unwrap();
+    });
 }
