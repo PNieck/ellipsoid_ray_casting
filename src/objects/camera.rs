@@ -93,14 +93,14 @@ mod camera_tests {
     fn upper_left_corner_square_viewport() {
         let camera = Camera::new(3.0, 3.0);
 
-        assert_eq!(point![-1.5, 1.5, 0.0], camera.upper_left_corner());
+        assert_eq!(point![-1.5, 1.5, CAMERA_CENTER.z], camera.upper_left_corner());
     }
 
     #[test]
     fn upper_left_corner_not_square_viewport() {
         let camera = Camera::new(4.0, 3.0);
 
-        assert_eq!(point![-2.0, 1.5, 0.0], camera.upper_left_corner());
+        assert_eq!(point![-2.0, 1.5, CAMERA_CENTER.z], camera.upper_left_corner());
     }
 }
 
@@ -116,7 +116,7 @@ mod points_iterator_tests {
 
         let mut iter = camera.get_points_iterator(1, 1);
 
-        assert_eq!(Some(point![0.0, 0.0, 0.0]), iter.next());
+        assert_eq!(Some(point![0.0, 0.0, CAMERA_CENTER.z]), iter.next());
         assert_eq!(None, iter.next());
     }
 
@@ -127,7 +127,7 @@ mod points_iterator_tests {
 
         let mut iter = camera.get_points_iterator(1, 1);
 
-        assert_eq!(Some(point![0.0, 0.0, 0.0]), iter.next());
+        assert_eq!(Some(point![0.0, 0.0, CAMERA_CENTER.z]), iter.next());
         assert_eq!(None, iter.next());
     }
 
@@ -139,19 +139,19 @@ mod points_iterator_tests {
         let mut iter = camera.get_points_iterator(3, 3);
 
         // First row
-        assert_eq!(Some(point![-1.0, 1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 0.0, 1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 1.0, 1.0, 0.0]), iter.next());
+        assert_eq!(Some(point![-1.0, 1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 0.0, 1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 1.0, 1.0, CAMERA_CENTER.z]), iter.next());
 
         // Second row
-        assert_eq!(Some(point![-1.0, 0.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 0.0, 0.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 1.0, 0.0, 0.0]), iter.next());
+        assert_eq!(Some(point![-1.0, 0.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 0.0, 0.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 1.0, 0.0, CAMERA_CENTER.z]), iter.next());
 
         // Third row
-        assert_eq!(Some(point![-1.0, -1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 0.0, -1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 1.0, -1.0, 0.0]), iter.next());
+        assert_eq!(Some(point![-1.0, -1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 0.0, -1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 1.0, -1.0, CAMERA_CENTER.z]), iter.next());
 
         assert_eq!(None, iter.next());
     }
@@ -164,25 +164,25 @@ mod points_iterator_tests {
         let mut iter = camera.get_points_iterator(5, 3);
 
         // First row
-        assert_eq!(Some(point![-2.0, 1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![-1.0, 1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 0.0, 1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 1.0, 1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 2.0, 1.0, 0.0]), iter.next());
+        assert_eq!(Some(point![-2.0, 1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![-1.0, 1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 0.0, 1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 1.0, 1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 2.0, 1.0, CAMERA_CENTER.z]), iter.next());
 
         // Second row
-        assert_eq!(Some(point![-2.0, 0.0, 0.0]), iter.next());
-        assert_eq!(Some(point![-1.0, 0.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 0.0, 0.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 1.0, 0.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 2.0, 0.0, 0.0]), iter.next());
+        assert_eq!(Some(point![-2.0, 0.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![-1.0, 0.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 0.0, 0.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 1.0, 0.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 2.0, 0.0, CAMERA_CENTER.z]), iter.next());
 
         // Third row
-        assert_eq!(Some(point![-2.0, -1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![-1.0, -1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 0.0, -1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 1.0, -1.0, 0.0]), iter.next());
-        assert_eq!(Some(point![ 2.0, -1.0, 0.0]), iter.next());
+        assert_eq!(Some(point![-2.0, -1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![-1.0, -1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 0.0, -1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 1.0, -1.0, CAMERA_CENTER.z]), iter.next());
+        assert_eq!(Some(point![ 2.0, -1.0, CAMERA_CENTER.z]), iter.next());
 
         assert_eq!(None, iter.next());
     }
