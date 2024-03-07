@@ -131,6 +131,11 @@ impl Scene {
         self.brightness = value;
         self.reset_blocks_size();
     }
+
+    pub fn set_max_block_size(&mut self, value: u32) {
+        self.max_block_size = value;
+        self.reset_blocks_size();
+    }
 }
 
 

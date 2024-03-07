@@ -35,6 +35,9 @@ pub struct GuiState {
 
     pub old_m: f32,
     pub m: f32,
+
+    pub old_max_block_size: u32,
+    pub max_block_size: u32,
 }
 
 impl Gui {
@@ -167,6 +170,9 @@ impl GuiState {
             c: 3.0,
             old_m: 0.0,
             m: 1.0,
+
+            old_max_block_size: 0,
+            max_block_size: 81,
         }
     }
 
@@ -185,6 +191,19 @@ impl GuiState {
 
                 ui.label("Light options");
                 float_input("m: ", &mut self.m, 0.0..=20.0, ui);
+
+                ui.separator();
+
+                egui::ComboBox::from_label("Select one!")
+                    .selected_text(format!("{}", self.max_block_size))
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut self.max_block_size, 1, "1");
+                        ui.selectable_value(&mut self.max_block_size, 3, "3");
+                        ui.selectable_value(&mut self.max_block_size, 9, "9");
+                        ui.selectable_value(&mut self.max_block_size, 27, "27");
+                        ui.selectable_value(&mut self.max_block_size, 81, "81");
+                    }
+                );
             });
 
         fn float_input(label: &str, value: &mut f32, range: RangeInclusive<f32>, ui: &mut Ui) {

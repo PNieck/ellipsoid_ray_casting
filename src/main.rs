@@ -126,4 +126,9 @@ fn handle_user_input(scene: &mut Scene, gui: &mut ui::Gui) {
         scene.set_brightness(gui.state.m);
         gui.state.old_m = gui.state.m;
     }
+
+    if gui.state.max_block_size != gui.state.old_max_block_size {
+        scene.set_max_block_size(gui.state.max_block_size);
+        gui.state.old_max_block_size = gui.state.max_block_size;
+    }
 }
