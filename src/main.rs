@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 
 use ellipsoid_ray_casting::Scene;
-use na::Point2;
+use na::{Point2, Vector3};
 use winit::{
     event::{ElementState, Event, MouseButton, WindowEvent}, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder
 };
@@ -16,7 +16,7 @@ fn main() {
     let window = {
         let size = LogicalSize::new(600 as f64, 600 as f64);
         WindowBuilder::new()
-            .with_title("Hello Pixels + egui")
+            .with_title("Ellipsoid ray casting")
             .with_inner_size(size)
             .with_min_inner_size(size)
             .build(&event_loop)
@@ -29,7 +29,8 @@ fn main() {
     let window_size = window.inner_size();
     let mut gui = ui::Gui::new(&event_loop, window_size.width, window_size.height, window.scale_factor() as f32, scene.canvas.pixels());
 
-    let mut mouse_pressed = false;
+    let mut mouse_left_pressed = false;
+    let mut mouse_middle_presed = false;
     let mut cur_mouse_pos = Point2::origin();
 
     event_loop.run(move |event, _, control_flow| {
@@ -56,11 +57,19 @@ fn main() {
                     }
 
                     WindowEvent::MouseInput { state: ElementState::Pressed, button: MouseButton::Left, .. } => {
-                        mouse_pressed = true;
+                        mouse_left_pressed = true;
                     }
 
                     WindowEvent::MouseInput { state: ElementState::Released, button: MouseButton::Left, .. } => {
-                        mouse_pressed = false;
+                        mouse_left_pressed = false;
+                    }
+
+                    WindowEvent::MouseInput { state: ElementState::Pressed, button: MouseButton::Middle, .. } => {
+                        mouse_middle_presed = true;
+                    }
+
+                    WindowEvent::MouseInput { state: ElementState::Released, button: MouseButton::Middle, .. } => {
+                        mouse_middle_presed = false;
                     }
 
                     WindowEvent::CursorMoved { position, .. } => {
@@ -70,8 +79,12 @@ fn main() {
         
                         let mouse_move_vec = cur_mouse_pos - prev_mouse_pos;
         
-                        if mouse_pressed && !gui.uses_mouse() {
+                        if mouse_left_pressed && !gui.uses_mouse() {
                             scene.rotate_ellipse(-mouse_move_vec.y as f32 * 0.02, -mouse_move_vec.x as f32 * 0.02, 0.0);
+                        }
+
+                        if mouse_middle_presed && !gui.uses_mouse() {
+                            scene.move_ellipse(&Vector3::new(mouse_move_vec.x as f32 * 0.001, -mouse_move_vec.y as f32 * 0.001, 0.0))
                         }
                     }
 

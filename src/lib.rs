@@ -137,6 +137,11 @@ impl Scene {
         self.reset_blocks_size();
     }
 
+    pub fn move_ellipse(&mut self, vec: &Vector3<f32>) {
+        self.ellipse.position += vec;
+        self.reset_blocks_size();
+    }
+
     pub fn set_brightness(&mut self, value: f32) {
         self.brightness = value;
         self.reset_blocks_size();

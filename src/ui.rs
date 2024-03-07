@@ -189,7 +189,7 @@ impl GuiState {
 
     /// Create the UI using egui.
     fn ui(&mut self, ctx: &Context) {
-        egui::Window::new("Ellipsoid ray casting")
+        egui::Window::new("Options")
             .open(&mut self.window_open)
             .show(ctx, |ui| {
 
@@ -206,7 +206,8 @@ impl GuiState {
 
                 ui.separator();
 
-                egui::ComboBox::from_label("Select one!")
+                ui.label("Max rendering block size");
+                egui::ComboBox::from_label("")
                     .selected_text(format!("{}", self.max_block_size))
                     .show_ui(ui, |ui| {
                         ui.selectable_value(&mut self.max_block_size, 1, "1");
