@@ -1,5 +1,8 @@
+extern crate nalgebra as na;
+
 use pixels::{Pixels, SurfaceTexture};
 use winit::window::Window;
+use na::Point2;
 
 use super::color::Color;
 
@@ -86,6 +89,17 @@ impl Canvas {
 
     pub fn render(&self) {
         self.pixels.render().expect("Error while rendering image");
+    }
+
+    pub fn draw_rectangle(&mut self, up_left: Point2<u32>, down_right: Point2<u32>, color: Color) {
+        let max_x = u32::min(down_right.x, self.width - 1);
+        let max_y = u32::min(down_right.y, self.height - 1);
+
+        for x in up_left.x..=max_x {
+            for y in up_left.y..=max_y {
+                self.set_pixel(color, y, x);
+            }
+        }
     }
 }
 

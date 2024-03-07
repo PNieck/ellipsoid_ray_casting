@@ -7,8 +7,8 @@ pub const CAMERA_CENTER: Point3<f32> = point![0.0, 0.0, -20.0];
 
 
 pub struct Camera {
-    viewport_width: f32,
-    viewport_height: f32
+    pub viewport_width: f32,
+    pub viewport_height: f32
 }
 
 
@@ -32,7 +32,7 @@ impl Camera {
     }
 
 
-    fn upper_left_corner(&self) -> Point3<f32> {
+    pub fn upper_left_corner(&self) -> Point3<f32> {
         let translation = Vector3::y() * (self.viewport_height/2.0) + Vector3::x() * (-self.viewport_width/2.0);
 
         CAMERA_CENTER + translation

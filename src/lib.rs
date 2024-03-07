@@ -1,6 +1,6 @@
 extern crate nalgebra as na;
 
-use na::{Point3, UnitVector3};
+use na::{Point2, Point3, UnitVector3, Vector2, Vector3};
 use objects::{
     Camera,
     Canvas,
@@ -21,6 +21,9 @@ pub struct Scene {
     pub canvas: Canvas,
     
     brightness: f32,
+
+    cur_block_size: u32,
+    max_block_size: u32,
 }
 
 
@@ -35,6 +38,8 @@ impl Scene {
             ),
             canvas: Canvas::new(window),
             brightness: 2.0,
+            cur_block_size: 81,
+            max_block_size: 81
         }
     }
 
@@ -45,23 +50,42 @@ impl Scene {
     pub fn update(&mut self) {
         let miss_color: Color = Color::from_rgb(120, 120, 120);
 
-        let mut cam_points_iter = self.camera.get_points_iterator(self.canvas.get_width(), self.canvas.get_height());
+        let points_x = u32::div_ceil(self.canvas.get_width(), self.cur_block_size);
+        let points_y = u32::div_ceil(self.canvas.get_height(), self.cur_block_size);
 
-        for row in 0..self.canvas.get_height() {
-            for column in 0..self.canvas.get_width() {
-                let hit_point = cam_points_iter.next().unwrap(); 
+        let delta_x = Vector3::x() * (self.camera.viewport_width * self.cur_block_size as f32 / self.canvas.get_width() as f32);
+        let delta_y = -Vector3::y() * (self.camera.viewport_height * self.cur_block_size as f32 / self.canvas.get_height() as f32);
 
-                match self.ellipse.hit(hit_point.x, hit_point.y) {
+        let start_pos = self.camera.upper_left_corner() + (delta_x + delta_y) / 2.0;
+
+        for column in 0..points_x {
+            for row in 0..points_y {
+                if self.cur_block_size != self.max_block_size && row%3 == 1 && column%3 == 1 {
+                    continue;
+                }
+
+                let hit_point = start_pos + (row as f32 * delta_y) + (column as f32 * delta_x); 
+
+                let color = match self.ellipse.hit(hit_point.x, hit_point.y) {
                     HitRecord::Hit { z } => {
-                        let color = self.color_calculate(&Point3::new(hit_point.x, hit_point.y, z));
-                        self.canvas.set_pixel(color, row, column);
+                        self.color_calculate(&Point3::new(hit_point.x, hit_point.y, z))
                     }
 
                     HitRecord::Miss => {
-                        self.canvas.set_pixel(miss_color, row, column);
+                        miss_color
                     }
-                }
+                };
+
+                self.canvas.draw_rectangle(
+                    Point2::new(column * self.cur_block_size, row*self.cur_block_size),
+                    Point2::new((column + 1)*self.cur_block_size - 1, (row + 1)*self.cur_block_size - 1),
+                    color
+                );
             }
+        }
+
+        if self.cur_block_size > 1 {
+            self.cur_block_size /= 3;
         }
     }
 
@@ -72,28 +96,54 @@ impl Scene {
     }
 
 
+    fn reset_blocks_size(&mut self) {
+        self.cur_block_size = self.max_block_size;
+    }
+
+
     pub fn resize(&mut self, width: u32, height: u32) {
-        self.canvas.resize(width, height)
+        self.canvas.resize(width, height);
+        self.reset_blocks_size();
     }
 
 
     pub fn rotate_ellipse(&mut self, axis: &UnitVector3<f32>, angle: f32) {
         self.ellipse.rotate(axis, angle);
+        self.reset_blocks_size();
     }
 
     pub fn set_ellipsoid_a(&mut self, a: f32) {
         self.ellipse.set_a(a);
+        self.reset_blocks_size();
     }
 
     pub fn set_ellipsoid_b(&mut self, b: f32) {
         self.ellipse.set_b(b);
+        self.reset_blocks_size();
     }
 
     pub fn set_ellipsoid_c(&mut self, c: f32) {
         self.ellipse.set_c(c);
+        self.reset_blocks_size();
     }
 
     pub fn set_brightness(&mut self, value: f32) {
         self.brightness = value;
+        self.reset_blocks_size();
+    }
+}
+
+
+#[cfg(test)]
+mod various_tests {
+    #[test]
+    fn modula_test() {
+        assert_eq!(false, 0 % 3 == 1);
+        assert_eq!(true,  1 % 3 == 1);
+        assert_eq!(false, 2 % 3 == 1);
+        assert_eq!(false, 3 % 3 == 1);
+        assert_eq!(true,  4 % 3 == 1);
+        assert_eq!(false, 5 % 3 == 1);
+        assert_eq!(false, 6 % 3 == 1)
     }
 }

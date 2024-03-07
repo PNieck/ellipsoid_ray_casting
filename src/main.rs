@@ -1,6 +1,5 @@
 extern crate nalgebra as na;
 
-use egui::ecolor::gamma_from_linear;
 use ellipsoid_ray_casting::Scene;
 use na::{Point2, UnitVector3, Vector3};
 use winit::{
@@ -114,12 +113,12 @@ fn handle_user_input(scene: &mut Scene, gui: &mut ui::Gui) {
     }
 
     if gui.state.old_b != gui.state.b {
-        scene.set_ellipsoid_b(gui.state.b);
+        scene.set_ellipsoid_b(1.0 / (gui.state.b * gui.state.b));
         gui.state.old_b = gui.state.b;
     }
 
     if gui.state.old_c != gui.state.c {
-        scene.set_ellipsoid_c(gui.state.c);
+        scene.set_ellipsoid_c(1.0 / (gui.state.c * gui.state.c));
         gui.state.old_c = gui.state.c;
     }
 
