@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 
 use ellipsoid_ray_casting::Scene;
-use na::{Point2, UnitVector3, Vector3};
+use na::Point2;
 use winit::{
     event::{ElementState, Event, MouseButton, WindowEvent}, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder
 };
@@ -66,13 +66,12 @@ fn main() {
                     WindowEvent::CursorMoved { position, .. } => {
                         let prev_mouse_pos = cur_mouse_pos;
                         cur_mouse_pos.x = position.x;
-                        cur_mouse_pos.y = -position.y;
+                        cur_mouse_pos.y = position.y;
         
                         let mouse_move_vec = cur_mouse_pos - prev_mouse_pos;
         
                         if mouse_pressed && !gui.uses_mouse() {
-                            let axis =  UnitVector3::new_normalize(Vector3::new(mouse_move_vec.y as f32, mouse_move_vec.x as f32, 0.0));
-                            scene.rotate_ellipse(&axis, mouse_move_vec.norm() as f32 * 0.04);
+                            scene.rotate_ellipse(-mouse_move_vec.y as f32 * 0.02, -mouse_move_vec.x as f32 * 0.02, 0.0);
                         }
                     }
 
@@ -130,5 +129,10 @@ fn handle_user_input(scene: &mut Scene, gui: &mut ui::Gui) {
     if gui.state.max_block_size != gui.state.old_max_block_size {
         scene.set_max_block_size(gui.state.max_block_size);
         gui.state.old_max_block_size = gui.state.max_block_size;
+    }
+
+    if gui.state.scale != gui.state.old_scale {
+        scene.set_ellipsoid_scale(gui.state.scale);
+        gui.state.old_scale = gui.state.scale;
     }
 }

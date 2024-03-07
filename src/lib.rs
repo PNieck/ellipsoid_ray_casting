@@ -1,6 +1,6 @@
 extern crate nalgebra as na;
 
-use na::{Point2, Point3, UnitVector3, Vector2, Vector3};
+use na::{Point2, Point3, Vector3};
 use objects::{
     Camera,
     Canvas,
@@ -32,7 +32,7 @@ impl Scene {
         Scene {
             camera: Camera::new(5.0, 5.0),
             ellipse: Ellipse::new(
-                1.0, 2.0, 3.0,
+                2.0, 1.0, 3.0,
                 &Point3::new(0.0_f32, 0.0, 0.0),
                 Color::from_rgb(239, 245, 66),
             ),
@@ -48,6 +48,8 @@ impl Scene {
     }
 
     pub fn update(&mut self) {
+        self.ellipse.recalculate();
+
         let miss_color: Color = Color::from_rgb(120, 120, 120);
 
         let points_x = u32::div_ceil(self.canvas.get_width(), self.cur_block_size);
@@ -107,8 +109,11 @@ impl Scene {
     }
 
 
-    pub fn rotate_ellipse(&mut self, axis: &UnitVector3<f32>, angle: f32) {
-        self.ellipse.rotate(axis, angle);
+    pub fn rotate_ellipse(&mut self, x: f32, y:f32, z: f32) {
+        self.ellipse.rotation.x += x;
+        self.ellipse.rotation.y += y;
+        self.ellipse.rotation.z += z;
+
         self.reset_blocks_size();
     }
 
@@ -124,6 +129,11 @@ impl Scene {
 
     pub fn set_ellipsoid_c(&mut self, c: f32) {
         self.ellipse.set_c(c);
+        self.reset_blocks_size();
+    }
+
+    pub fn set_ellipsoid_scale(&mut self, scale: f32) {
+        self.ellipse.set_scale(scale);
         self.reset_blocks_size();
     }
 

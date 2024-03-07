@@ -8,8 +8,11 @@ use super::Color;
 
 pub struct Ellipse {
     ellipse_m: Matrix4<f32>,
-    model_m: Matrix4<f32>,
     result_m: Matrix4<f32>,
+
+    pub rotation: Vector3<f32>,
+    pub position: Point3<f32>,
+    pub scale: f32,
 
     pub color: Color,
 }
@@ -25,21 +28,25 @@ impl Ellipse {
     pub fn new(a: f32, b: f32, c: f32, pos: &Point3<f32>, col: Color) -> Ellipse {
         let mut res = Ellipse {
             ellipse_m: Matrix4::from_diagonal(&Vector4::new(a, b, c, -1.0_f32)),
-            model_m: Matrix4::new_translation(&pos.coords),
+
+            rotation: Vector3::zeros(),
+            position: pos.clone(),
+            scale: 1.0,
 
             result_m: Matrix4::zeros(),
 
             color: col,
         };
 
-        res.update_matrices();
+        res.recalculate();
 
         res
     }
 
 
-    fn update_matrices(&mut self) {
-        let model_inv = self.model_m.try_inverse().unwrap();
+    pub fn recalculate(&mut self) {
+        let model_m = self.rotation_matrix() * self.scale_matrix() * self.translation_matrix();
+        let model_inv = model_m.try_inverse().unwrap();
 
         self.result_m = model_inv.transpose() * self.ellipse_m * model_inv;
     }
@@ -55,6 +62,49 @@ impl Ellipse {
                 2.0*m[(2, 2)]*pos.z + (m[(0, 2)] + m[(2, 0)])*pos.x + (m[(1, 2)] + m[(2, 1)])*pos.y + m[(3, 2)] + m[(2, 3)]
             )
         )
+    }
+
+
+    fn translation_matrix(&self) -> Matrix4<f32> {
+        Matrix4::new(
+            1.0, 0.0, 0.0, self.position.x,
+            0.0, 1.0, 0.0, self.position.y,
+            0.0, 0.0, 1.0, self.position.z,
+            0.0, 0.0, 0.0, 1.0
+        )
+    }
+
+
+    fn rotation_matrix(&self) -> Matrix4<f32> {
+        let x = self.rotation.x;
+        let y = self.rotation.y;
+        let z = self.rotation.z;
+
+        let rx = Matrix4::new(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, x.cos(), -x.sin(), 0.0,
+            0.0, x.sin(), x.cos(), 0.0,
+            0.0, 0.0, 0.0, 1.0
+        );
+        let ry = Matrix4::new(
+            y.cos(), 0.0, y.sin(), 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            -y.sin(), 0.0, y.cos(), 0.0,
+            0.0, 0.0, 0.0, 1.0
+        );
+        let rz = Matrix4::new(
+            z.cos(), -z.sin(), 0.0, 0.0,
+            z.sin(), z.cos(), 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        );
+
+        ry * rx * rz
+    }
+
+
+    fn scale_matrix(&self) -> Matrix4<f32> {
+        Matrix4::from_diagonal( &Vector4::new(self.scale, self.scale, self.scale, 1.0))
     }
 
 
@@ -84,28 +134,20 @@ impl Ellipse {
         }
     }
 
-    pub fn rotate(&mut self, axis: &UnitVector3<f32>, angle: f32) {
-        self.model_m *= Matrix4::from_axis_angle(axis, angle);
-
-        self.update_matrices();
-    }
-
     pub fn set_a(&mut self, a: f32) {
         self.ellipse_m[(0, 0)] = a;
-
-        self.update_matrices();
     }
 
     pub fn set_b(&mut self, b: f32) {
         self.ellipse_m[(1, 1)] = b;
-
-        self.update_matrices();
     }
 
     pub fn set_c(&mut self, c: f32) {
         self.ellipse_m[(2, 2)] = c;
+    }
 
-        self.update_matrices();
+    pub fn set_scale(&mut self, scale: f32) {
+        self.scale = scale;
     }
 }
 

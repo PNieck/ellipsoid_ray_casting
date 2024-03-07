@@ -26,15 +26,19 @@ pub struct GuiState {
     window_open: bool,
 
     pub old_a: f32,
-    pub old_b: f32,
-    pub old_c: f32,
-
     pub a: f32,
+
+    pub old_b: f32,
     pub b: f32,
+
+    pub old_c: f32,
     pub c: f32,
 
     pub old_m: f32,
     pub m: f32,
+
+    pub old_scale: f32,
+    pub scale: f32,
 
     pub old_max_block_size: u32,
     pub max_block_size: u32,
@@ -162,17 +166,24 @@ impl GuiState {
     fn new() -> Self {
         Self {
             window_open: true,
+
             old_a: 0.0,
+            a: 2.0,
+
             old_b: 0.0,
+            b: 1.0,
+
             old_c: 0.0,
-            a: 1.0,
-            b: 2.0,
             c: 3.0,
+
             old_m: 0.0,
             m: 1.0,
 
+            old_scale: 0.0,
+            scale: 1.0,
+
             old_max_block_size: 0,
-            max_block_size: 81,
+            max_block_size: 27,
         }
     }
 
@@ -186,6 +197,7 @@ impl GuiState {
                 float_input("a:", &mut self.a, 0.0..=5.0, ui);
                 float_input("b:", &mut self.b, 0.0..=5.0, ui);
                 float_input("c:", &mut self.c, 0.0..=5.0, ui);
+                float_input("scale:", &mut self.scale, 0.01..=5.0, ui);
 
                 ui.separator();
 
