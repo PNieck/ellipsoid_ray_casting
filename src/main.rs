@@ -1,5 +1,6 @@
 extern crate nalgebra as na;
 
+use egui::ecolor::gamma_from_linear;
 use ellipsoid_ray_casting::Scene;
 use na::{Point2, UnitVector3, Vector3};
 use winit::{
@@ -27,7 +28,7 @@ fn main() {
     scene.update();
     
     let window_size = window.inner_size();
-    let mut framework = ui::Framework::new(&event_loop, window_size.width, window_size.height, window.scale_factor() as f32, scene.canvas.pixels());
+    let mut gui = ui::Gui::new(&event_loop, window_size.width, window_size.height, window.scale_factor() as f32, scene.canvas.pixels());
 
     let mut mouse_pressed = false;
     let mut cur_mouse_pos = Point2::origin();
@@ -40,14 +41,14 @@ fn main() {
                 match &event {
                     WindowEvent::Resized(new_size) => {
                         scene.resize(new_size.width, new_size.height);
-                        framework.resize(new_size.width, new_size.height);
+                        gui.resize(new_size.width, new_size.height);
                         scene.update();
                     }
 
                     WindowEvent::ScaleFactorChanged { scale_factor, new_inner_size } => {
-                        framework.scale_factor(*scale_factor);
+                        gui.scale_factor(*scale_factor);
                         scene.resize(new_inner_size.width, new_inner_size.height);
-                        framework.resize(new_inner_size.width, new_inner_size.height);
+                        gui.resize(new_inner_size.width, new_inner_size.height);
                     }
 
                     WindowEvent::CloseRequested => {
@@ -70,7 +71,7 @@ fn main() {
         
                         let mouse_move_vec = cur_mouse_pos - prev_mouse_pos;
         
-                        if mouse_pressed {
+                        if mouse_pressed && !gui.uses_mouse() {
                             let axis =  UnitVector3::new_normalize(Vector3::new(mouse_move_vec.y as f32, mouse_move_vec.x as f32, 0.0));
                             scene.rotate_ellipse(&axis, mouse_move_vec.norm() as f32 * 0.04);
                         }
@@ -79,7 +80,7 @@ fn main() {
                     _ => ()
                 }
 
-                framework.handle_event(&event);
+                gui.handle_event(&event);
 
                 window.request_redraw();
             }
@@ -87,14 +88,15 @@ fn main() {
                 window.request_redraw();
             }
             Event::RedrawRequested(_) => {
+                handle_user_input(&mut scene, &mut gui);
                 scene.update();
-                framework.prepare(&window);
+                gui.prepare(&window);
 
                 scene.canvas.pixels().render_with(|encoder, render_target, context| {
                     context.scaling_renderer.render(encoder, render_target);
 
                     // Render egui
-                    framework.render(encoder, render_target, context);
+                    gui.render(encoder, render_target, context);
 
                     Ok(())
                 }).expect("Error while buffer rendering");
@@ -102,4 +104,27 @@ fn main() {
             _ => ()
         }
     });
+}
+
+
+fn handle_user_input(scene: &mut Scene, gui: &mut ui::Gui) {
+    if gui.state.old_a != gui.state.a {
+        scene.set_ellipsoid_a(1.0 / (gui.state.a * gui.state.a));
+        gui.state.old_a = gui.state.a;
+    }
+
+    if gui.state.old_b != gui.state.b {
+        scene.set_ellipsoid_b(gui.state.b);
+        gui.state.old_b = gui.state.b;
+    }
+
+    if gui.state.old_c != gui.state.c {
+        scene.set_ellipsoid_c(gui.state.c);
+        gui.state.old_c = gui.state.c;
+    }
+
+    if gui.state.old_m != gui.state.m {
+        scene.set_brightness(gui.state.m);
+        gui.state.old_m = gui.state.m;
+    }
 }

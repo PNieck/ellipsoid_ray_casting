@@ -17,10 +17,10 @@ mod objects;
 
 pub struct Scene {
     camera: Camera,
-    ellipse: Ellipse,
+    pub ellipse: Ellipse,
     pub canvas: Canvas,
     
-    light_intensity: f32,
+    brightness: f32,
 }
 
 
@@ -34,7 +34,7 @@ impl Scene {
                 Color::from_rgb(239, 245, 66),
             ),
             canvas: Canvas::new(window),
-            light_intensity: 2.0,
+            brightness: 2.0,
         }
     }
 
@@ -67,7 +67,7 @@ impl Scene {
 
 
     fn color_calculate(&self, pos: &Point3<f32>) -> Color {
-        let coef = (CAMERA_CENTER - pos).normalize().dot(&self.ellipse.normal(pos)).powf(self.light_intensity);
+        let coef = (CAMERA_CENTER - pos).normalize().dot(&self.ellipse.normal(pos)).powf(self.brightness);
         self.ellipse.color * coef
     }
 
@@ -79,5 +79,21 @@ impl Scene {
 
     pub fn rotate_ellipse(&mut self, axis: &UnitVector3<f32>, angle: f32) {
         self.ellipse.rotate(axis, angle);
+    }
+
+    pub fn set_ellipsoid_a(&mut self, a: f32) {
+        self.ellipse.set_a(a);
+    }
+
+    pub fn set_ellipsoid_b(&mut self, b: f32) {
+        self.ellipse.set_b(b);
+    }
+
+    pub fn set_ellipsoid_c(&mut self, c: f32) {
+        self.ellipse.set_c(c);
+    }
+
+    pub fn set_brightness(&mut self, value: f32) {
+        self.brightness = value;
     }
 }

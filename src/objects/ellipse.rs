@@ -89,6 +89,24 @@ impl Ellipse {
 
         self.update_matrices();
     }
+
+    pub fn set_a(&mut self, a: f32) {
+        self.ellipse_m[(0, 0)] = a;
+
+        self.update_matrices();
+    }
+
+    pub fn set_b(&mut self, b: f32) {
+        self.ellipse_m[(1, 1)] = b;
+
+        self.update_matrices();
+    }
+
+    pub fn set_c(&mut self, c: f32) {
+        self.ellipse_m[(2, 2)] = c;
+
+        self.update_matrices();
+    }
 }
 
 

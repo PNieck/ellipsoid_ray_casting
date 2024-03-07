@@ -1,11 +1,13 @@
-use egui::{ClippedPrimitive, Context, TexturesDelta};
+use std::ops::RangeInclusive;
+
+use egui::{ClippedPrimitive, Context, TexturesDelta, Ui};
 use egui_wgpu::renderer::{Renderer, ScreenDescriptor};
 use pixels::{wgpu, PixelsContext};
 use winit::event_loop::EventLoopWindowTarget;
 use winit::window::Window;
 
 /// Manages all state required for rendering egui over `Pixels`.
-pub(crate) struct Framework {
+pub(crate) struct Gui {
     // State for egui.
     egui_ctx: Context,
     egui_state: egui_winit::State,
@@ -15,16 +17,27 @@ pub(crate) struct Framework {
     textures: TexturesDelta,
 
     // State for the GUI
-    gui: Gui,
+    pub state: GuiState,
 }
 
-/// Example application state. A real application will need a lot more state than this.
-struct Gui {
+
+pub struct GuiState {
     /// Only show the egui window when true.
     window_open: bool,
+
+    pub old_a: f32,
+    pub old_b: f32,
+    pub old_c: f32,
+
+    pub a: f32,
+    pub b: f32,
+    pub c: f32,
+
+    pub old_m: f32,
+    pub m: f32,
 }
 
-impl Framework {
+impl Gui {
     /// Create egui.
     pub(crate) fn new<T>(
         event_loop: &EventLoopWindowTarget<T>,
@@ -45,7 +58,7 @@ impl Framework {
         };
         let renderer = Renderer::new(pixels.device(), pixels.render_texture_format(), None, 1);
         let textures = TexturesDelta::default();
-        let gui = Gui::new();
+        let gui = GuiState::new();
 
         Self {
             egui_ctx,
@@ -54,7 +67,7 @@ impl Framework {
             renderer,
             paint_jobs: Vec::new(),
             textures,
-            gui,
+            state: gui,
         }
     }
 
@@ -81,7 +94,7 @@ impl Framework {
         let raw_input = self.egui_state.take_egui_input(window);
         let output = self.egui_ctx.run(raw_input, |egui_ctx| {
             // Draw the demo application.
-            self.gui.ui(egui_ctx);
+            self.state.ui(egui_ctx);
         });
 
         self.textures.append(output.textures_delta);
@@ -135,40 +148,52 @@ impl Framework {
             self.renderer.free_texture(id);
         }
     }
+
+    pub fn uses_mouse(&self) -> bool {
+        self.egui_ctx.is_pointer_over_area() || self.egui_ctx.is_using_pointer()
+    }
 }
 
-impl Gui {
+impl GuiState {
     /// Create a `Gui`.
     fn new() -> Self {
-        Self { window_open: true }
+        Self {
+            window_open: true,
+            old_a: 0.0,
+            old_b: 0.0,
+            old_c: 0.0,
+            a: 1.0,
+            b: 2.0,
+            c: 3.0,
+            old_m: 0.0,
+            m: 1.0,
+        }
     }
 
     /// Create the UI using egui.
     fn ui(&mut self, ctx: &Context) {
-        egui::TopBottomPanel::top("menubar_container").show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
-                ui.menu_button("File", |ui| {
-                    if ui.button("About...").clicked() {
-                        self.window_open = true;
-                        ui.close_menu();
-                    }
-                })
-            });
-        });
-
-        egui::Window::new("Hello, egui!")
+        egui::Window::new("Ellipsoid ray casting")
             .open(&mut self.window_open)
             .show(ctx, |ui| {
-                ui.label("This example demonstrates using egui with pixels.");
-                ui.label("Made with 💖 in San Francisco!");
+
+                ui.label("Ellipsoid parameters");
+                float_input("a:", &mut self.a, 0.0..=5.0, ui);
+                float_input("b:", &mut self.b, 0.0..=5.0, ui);
+                float_input("c:", &mut self.c, 0.0..=5.0, ui);
 
                 ui.separator();
 
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x /= 2.0;
-                    ui.label("Learn more about egui at");
-                    ui.hyperlink("https://docs.rs/egui");
-                });
+                ui.label("Light options");
+                float_input("m: ", &mut self.m, 0.0..=20.0, ui);
             });
+
+        fn float_input(label: &str, value: &mut f32, range: RangeInclusive<f32>, ui: &mut Ui) {
+            ui.horizontal(|ui| {
+                ui.label(label);
+                ui.add(egui::DragValue::new(value)
+                    .speed(0.01)
+                    .clamp_range(range));
+            });
+        }
     }
 }
